@@ -1,0 +1,13 @@
+
+- name: Check for upgradable packages (Debian/Ubuntu)
+  ansible.builtin.shell: apt list --upgradable
+  register: upgradable_packages_debian
+  changed_when: false
+  failed_when: false
+  when: "ansible_os_family == 'Debian' or ansible_os_family == 'Ubuntu'"
+  ignore_errors: true
+
+- name: Set fact for upgradable packages existence (Debian/Ubuntu)
+  set_fact:
+    packages_need_updating: "{{ upgradable_packages_debian.stdout_lines | length > 1 }}"
+  when: "ansible_os_family == 'Debian' or ansible_os_family == 'Ubuntu'"

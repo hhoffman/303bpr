@@ -1,0 +1,9 @@
+---
+# update.yml
+
+- name: Update Distributions
+  hosts: servers
+  become: yes
+  become_user: root
+  roles:
+    - update_system

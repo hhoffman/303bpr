@@ -1,0 +1,45 @@
+---
+# Variables for printer_setup role
+
+printers:
+  - model: "Dell 2130cn Color Laser"
+    port: 631
+    location: "%h"  # Hostname placeholder, can be static or dynamic
+    txt_version: 1
+    queue_total: 1
+    transparency: "T"
+    urf: "none"
+    state: 3
+    type: "0x2900c"
+    pdl_list: "application/octet-stream,application/pdf,application/postscript,application/vnd.cups-raster,image/gif,image/jpeg,image/png,image/tiff,image/urf,text/html,text/plain,application/vnd.adobe-reader-postscript,application/vnd.cups-pdf"
+
+  # Add more printer configurations as needed
+  - model: "Brother HL 2280DW"
+    port: 631
+    location: "%h"  # Hostname placeholder, can be static or dynamic
+    txt_version: 1
+    queue_total: 1
+    transparency: "T"
+    urf: "none"
+    state: 3
+    type: "0x2900c"
+    pdl_list: "application/octet-stream,application/pdf,application/postscript,application/vnd.cups-raster,image/gif,image/jpeg,image/png,image/tiff,image/urf,text/html,text/plain,application/vnd.adobe-reader-postscript,application/vnd.cups-pdf"
+  # Add more printer configurations as needed
+
+
+      
+#### Default printer model, can be overridden
+###printer_model: "Desk Jet 2130"
+###
+#### Other potential variables for printer configuration
+###printer_port: 631
+###printer_location: "%h"  # Hostname placeholder, can be static or dynamic
+###printer_txt_version: 1
+###printer_queue_total: 1
+###printer_transparency: "T"
+###printer_urf: "none"
+###printer_state: 3
+###printer_type: "0x2900c"
+###printer_pdl_list: "application/octet-stream,application/pdf,application/postscript,application/vnd.cups-raster,image/gif,image/jpeg,image/png,image/tiff,image/urf,text/html,text/plain,application/vnd.adobe-reader-postscript,application/vnd.cups-pdf"
+#### You can add more variables as needed for your configuration
+###

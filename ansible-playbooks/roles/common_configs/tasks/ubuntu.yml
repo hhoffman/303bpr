@@ -1,0 +1,13 @@
+# Disable Ads in motd
+- name: Comment out motd news
+  ansible.builtin.replace:
+    path: /etc/default/motd-news  # Assuming this is the file you want to modify
+    regexp: '^ENABLED=1'          # Example regex, adjust as needed
+    replace: 'ENABLED=0'          # Example replacement, adjust as needed
+
+# Ensure ansible user exists everywhere
+- name: Add user 'ansible' with privs
+  ansible.builtin.user:
+    name: ansible
+    comment: ansible
+    group: sudo

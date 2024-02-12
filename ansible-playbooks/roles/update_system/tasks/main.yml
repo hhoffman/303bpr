@@ -1,0 +1,81 @@
+---
+# roles/update_system/tasks/main.yml
+
+- name: Gather facts
+  ansible.builtin.setup:
+
+- name: Gather package facts
+  ansible.builtin.package_facts:
+    manager: auto
+
+
+
+# Check for updgradeable packages by Distro type
+- name: Check for upgradable packages (Debian/Ubuntu)
+  import_tasks: ubuntu.yml
+  when: "ansible_os_family == 'Debian' or ansible_os_family == 'Ubuntu'"
+
+- name: Check for upgradable packages (Rocky)
+  import_tasks: redhat.yml
+  when: ansible_os_family == 'RedHat'
+
+
+
+# Check for an previous snapshot made by this play
+- name: Check for previous snapshot made by this play
+  command: "virsh snapshot-list --domain {{ inventory_hostname }}"
+  register: snapshot_list
+  delegate_to: localhost
+  vars:
+    ansible_become: false
+    ansible_user: root
+  when:
+    - packages_need_updating | default(false) | bool
+    - (ansible_virtualization_type == "kvm" or ansible_virtualization_type == "qemu")
+    - ansible_virtualization_role == "guest"
+      #ignore_errors: yes
+
+#- name: Print output snapshot_list
+#  ansible.builtin.debug:
+#    var: snapshot_list
+#  when:
+#    - ansible_virtualization_role == "guest"
+#    - "'snapshot_before_update' in snapshot_list.stdout"
+#
+
+- name: Remove existing snapshot before update if exists
+  command: "virsh snapshot-delete --domain {{ inventory_hostname }} --snapshotname snapshot_before_update"
+  delegate_to: localhost
+  when:
+    - snapshot_list is defined
+    - "'snapshot_before_update' in snapshot_list.stdout"
+  vars:
+    ansible_become: false
+    ansible_user: root
+  ignore_errors: yes
+
+
+
+#### Create new snapshot before updating
+###- name: Create a snapshot if the server is KVM/QEMU and needs updating
+###  command: "virsh snapshot-create-as --domain {{ inventory_hostname }} --name snapshot_before_update"
+###  delegate_to: localhost
+###  vars:
+###    ansible_become: false
+###    ansible_user: root
+###  when:
+###    - snapshot_list is defined and snapshot_list.stdout is defined
+###    - "'snapshot_before_update' not in snapshot_list.stdout"
+###    - (ansible_virtualization_type == "kvm" or ansible_virtualization_type == "qemu")
+###    - ansible_virtualization_role == "guest"
+###    - packages_need_updating | default(false) | bool
+###
+###
+###
+- name: Update system packages
+  ansible.builtin.package:
+    name: '*'
+    state: latest
+  when: 
+    - "ansible_os_family == 'Debian' or ansible_os_family == 'Ubuntu' or ansible_os_family == 'Rocky'"
+    - packages_need_updating | default(false) | bool

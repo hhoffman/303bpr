@@ -1,0 +1,30 @@
+---
+# projects/ansible-playbooks/setup-print-server.yml
+#
+# Specific to my printers:
+# root@prntsrv-00:~# lpinfo -v
+# direct usb://Brother/HL-2280DW?serial=U62708A4N533172
+# direct usb://Dell/2130cn%20Color%20Laser?serial=0932278619
+#
+# root@prntsrv-00:~# lpoptions -p Brother_HL-2280DW -l
+# PageSize/Media Size: A4 A5 A6 B5 B6 EnvC5 EnvMonarch EnvDL Executive Legal *Letter
+# Resolution/Resolution: *600dpi 1200dpi 300dpi
+# InputSlot/Media Source: *Auto Tray1 Tray2 Tray3 MPTray Manual
+# MediaType/Media Type: *PLAIN THIN THICK THICKER BOND TRANS ENV ENV-THICK ENV-THIN
+# brlaserEconomode/Toner save mode: *False True
+# Duplex/2-Sided Printing: *None DuplexNoTumble DuplexTumble#
+#
+# root@prntsrv-00:~# lpoptions -p Dell_2130cn_Color_Laser -l
+# PrintoutMode/Print Quality: Draft Draft.Gray *Normal Normal.Gray High High.Gray
+# PageSize/Page Size: Custom.WIDTHxHEIGHT Letter *A4 11x17 A3 A5 B5 Env10 EnvC5 EnvDL EnvISOB5 EnvMonarch Executive Legal
+# InputSlot/Media Source: *Default Upper Middle Lower Multipurpose Automatic Manual
+# Duplex/Double-Sided Printing: DuplexNoTumble DuplexTumble *None
+# ColorModel/Color Mode: *FromPrintoutMode Color Grayscale
+# PrinterResolution/Resolution: *FromPrintoutMode 300x300dpi 600x600dpi 1200x600dpi 1200x1200dpi
+
+- name: Setup Print Server
+  hosts: print_servers
+  become: yes
+  become_user: root
+  roles:
+    - print_server

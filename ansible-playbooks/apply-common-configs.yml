@@ -1,0 +1,9 @@
+---
+# apply-common-configs.yml
+
+- name: Apply config configurations
+  hosts: servers
+  become: yes
+  become_user: root
+  roles:
+    - common_configs

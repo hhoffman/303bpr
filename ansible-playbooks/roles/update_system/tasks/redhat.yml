@@ -1,0 +1,12 @@
+- name: Check for upgradable packages (Rocky)
+  ansible.builtin.shell: dnf check-update
+  register: upgradable_packages_rocky
+  changed_when: false
+  failed_when: false
+  when: ansible_os_family == 'Rocky'
+  ignore_errors: true
+
+- name: Set fact for upgradable packages existence (Rocky)
+  set_fact:
+    packages_need_updating: "{{ upgradable_packages_rocky.stdout_lines | length > 0 }}"
+  when: ansible_os_family == 'Rocky'

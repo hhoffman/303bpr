@@ -1,0 +1,7 @@
+---
+# handlers/main.yml
+- name: restart avahi-daemon
+  ansible.builtin.systemd:
+    name: avahi-daemon
+    state: restarted
+      #daemon_reload: yes

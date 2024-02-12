@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<service-group>
+  <name replace-wildcards="yes">AirPrint {{ item.model | replace(" ", "-") }} @ %h</name>
+  <service>
+    <type>_ipp._tcp</type>
+    <subtype>_universal._sub._ipp._tcp</subtype>
+    <port>{{ item.port }}</port>
+    <txt-record>txtvers={{ item.txt_version }}</txt-record>
+    <txt-record>qtotal={{ item.queue_total }}</txt-record>
+    <txt-record>Transparent={{ item.transparency }}</txt-record>
+    <txt-record>URF={{ item.urf }}</txt-record>
+    <txt-record>rp=printers/{{ item.model | replace(" ", "") }}</txt-record>
+    <txt-record>note={{ item.model }}</txt-record>
+    <txt-record>product=(GPL Ghostscript)</txt-record>
+    <txt-record>printer-state={{ item.state }}</txt-record>
+    <txt-record>printer-type={{ item.type }}</txt-record>
+    <txt-record>pdl={{ item.pdl_list }}</txt-record>
+  </service>
+</service-group>
+
