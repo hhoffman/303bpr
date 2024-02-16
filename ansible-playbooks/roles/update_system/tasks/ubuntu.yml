@@ -5,7 +5,7 @@
   changed_when: false
   failed_when: false
   when: "ansible_os_family == 'Debian' or ansible_os_family == 'Ubuntu'"
-  ignore_errors: true
+  #  ignore_errors: true
 
 - name: Set fact for upgradable packages existence (Debian/Ubuntu)
   set_fact:
