@@ -8,8 +8,7 @@
   ansible.builtin.package_facts:
     manager: auto
 
-
-
+#
 # Check for updgradeable packages by Distro type
 - name: Check for upgradable packages (Debian/Ubuntu)
   import_tasks: ubuntu.yml
@@ -35,6 +34,17 @@
     - ansible_virtualization_role == "guest"
       #ignore_errors: yes
 
+#- name: Debug output of snapshot_list
+#  ansible.builtin.debug:
+#    msg: |
+#      Snapshot list output for {{ inventory_hostname }}:
+#      stdout: "{{ snapshot_list.stdout }}"
+#      stderr: "{{ snapshot_list.stderr }}"
+#      rc: "{{ snapshot_list.rc }}"
+#  when:
+#    - snapshot_list is defined
+#    - ansible_virtualization_role == "guest"
+#
 #- name: Print output snapshot_list
 #  ansible.builtin.debug:
 #    var: snapshot_list
@@ -56,19 +66,19 @@
 
 
 
-#### Create new snapshot before updating
-###- name: Create a snapshot if the server is KVM/QEMU and needs updating
-###  command: "virsh snapshot-create-as --domain {{ inventory_hostname }} --name snapshot_before_update"
-###  delegate_to: localhost
-###  vars:
-###    ansible_become: false
-###    ansible_user: root
-###  when:
-###    - snapshot_list is defined and snapshot_list.stdout is defined
-###    - "'snapshot_before_update' not in snapshot_list.stdout"
-###    - (ansible_virtualization_type == "kvm" or ansible_virtualization_type == "qemu")
-###    - ansible_virtualization_role == "guest"
-###    - packages_need_updating | default(false) | bool
+# Create new snapshot before updating
+- name: Create a snapshot if the server is KVM/QEMU and needs updating
+  command: "virsh snapshot-create-as --domain {{ inventory_hostname }} --name snapshot_before_update"
+  delegate_to: localhost
+  vars:
+    ansible_become: false
+    ansible_user: root
+  when:
+    #- snapshot_list is defined and snapshot_list.stdout is defined
+    #- "'snapshot_before_update' not in snapshot_list.stdout"
+    - (ansible_virtualization_type == "kvm" or ansible_virtualization_type == "qemu")
+    - ansible_virtualization_role == "guest"
+    - packages_need_updating | default(false) | bool
 ###
 ###
 ###
