@@ -34,25 +34,6 @@
     - ansible_virtualization_role == "guest"
       #ignore_errors: yes
 
-#- name: Debug output of snapshot_list
-#  ansible.builtin.debug:
-#    msg: |
-#      Snapshot list output for {{ inventory_hostname }}:
-#      stdout: "{{ snapshot_list.stdout }}"
-#      stderr: "{{ snapshot_list.stderr }}"
-#      rc: "{{ snapshot_list.rc }}"
-#  when:
-#    - snapshot_list is defined
-#    - ansible_virtualization_role == "guest"
-#
-#- name: Print output snapshot_list
-#  ansible.builtin.debug:
-#    var: snapshot_list
-#  when:
-#    - ansible_virtualization_role == "guest"
-#    - "'snapshot_before_update' in snapshot_list.stdout"
-#
-
 - name: Remove existing snapshot before update if exists
   command: "virsh snapshot-delete --domain {{ inventory_hostname }} --snapshotname snapshot_before_update"
   delegate_to: localhost
@@ -65,7 +46,6 @@
   ignore_errors: yes
 
 
-
 # Create new snapshot before updating
 - name: Create a snapshot if the server is KVM/QEMU and needs updating
   command: "virsh snapshot-create-as --domain {{ inventory_hostname }} --name snapshot_before_update"
@@ -74,14 +54,11 @@
     ansible_become: false
     ansible_user: root
   when:
-    #- snapshot_list is defined and snapshot_list.stdout is defined
-    #- "'snapshot_before_update' not in snapshot_list.stdout"
     - (ansible_virtualization_type == "kvm" or ansible_virtualization_type == "qemu")
     - ansible_virtualization_role == "guest"
     - packages_need_updating | default(false) | bool
-###
-###
-###
+
+
 - name: Update system packages
   ansible.builtin.package:
     name: '*'
