@@ -66,3 +66,18 @@
   when: 
     - "ansible_os_family == 'Debian' or ansible_os_family == 'Ubuntu' or ansible_os_family == 'Rocky'"
     - packages_need_updating | default(false) | bool
+
+- name: Check if reboot required
+  stat:
+    path: /var/run/reboot-required
+  register: reboot_required_file
+
+- name: Reboot if required
+  reboot:
+    msg: "Reboot initiated by Ansible for system updates"
+  when: reboot_required_file.stat.exists and ansible_virtualization_role == "guest"
+
+- name: Message that reboot is required
+  ansible.builtin.debug:
+     msg: "Reboot required for {{ inventory_hostname }} after ansible package updates"
+  when: reboot_required_file.stat.exists and ansible_virtualization_role != "guest"
