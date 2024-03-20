@@ -67,6 +67,7 @@
     - "ansible_os_family == 'Debian' or ansible_os_family == 'Ubuntu' or ansible_os_family == 'Rocky'"
     - packages_need_updating | default(false) | bool
 
+# Need to check if this is ubiqutious across OSs
 - name: Check if reboot required
   stat:
     path: /var/run/reboot-required
