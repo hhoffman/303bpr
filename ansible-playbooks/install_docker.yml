@@ -1,5 +1,5 @@
 ---
-- hosts: localhost, docker-*
+- hosts: docker-*
   become: true
   become_user: root
   vars:
@@ -44,6 +44,22 @@
           - containerd.io
           - docker-buildx-plugin
           - docker-compose-plugin
+          - python3-docker
         state: latest
         update_cache: true
-        
+
+    - name: Initialize Docker Swarm
+      community.docker.docker_swarm:
+        state: present
+        advertise_addr: "{{ ansible_default_ipv4. address }}"
+        listen_addr: "0.0.0.0"
+      register: manager_output
+      when: inventory_hostname in groups['docker_managers'][0]
+
+    - name: Join Docker Swarm
+      docker_swarm:
+        state: join
+        join_token: "{{ hostvars[groups['docker_managers'][0]].manager_output.swarm_facts.JoinTokens.Worker }}"
+        advertise_addr: "{{ ansible_default_ipv4. address }}"
+        remote_addrs: "{{ hostvars[groups['docker_managers'][0]].inventory_hostname }}"
+      when: inventory_hostname in groups['docker_workers']
