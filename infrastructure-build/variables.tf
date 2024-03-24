@@ -2,7 +2,7 @@
 # Example sourced from https://blog.kroy.io/2020/11/03/esxi-to-libvirt-now-with-more-terraform/
 variable "vm_hostname" {
   description = "vm hostname"
-  default     = ["docker-00", "docker-01"]
+  default     = ["docker-00", "docker-01", "docker-03"]
   type        = list(string)
 }
 
