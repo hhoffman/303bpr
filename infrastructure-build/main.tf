@@ -1,7 +1,7 @@
 # Defining VM Volume
 resource "libvirt_volume" "os_image" {
   count = length(var.vm_hostname)
-  name  = "os_image-${var.vm_hostname[count.index]}.qcow2"
+  name  = "os_image-${var.vm_hostname[count.index]}.${var.vm_fqdn}.qcow2"
   pool  = "default" # List storage pools using virsh pool-list
   #source = "https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-amd64.img"
   source = "/var/lib/libvirt/images/base/ubuntu-22.04-server-cloudimg-amd64.img"
@@ -11,7 +11,7 @@ resource "libvirt_volume" "os_image" {
 # Use CloudInit to add the instance
 resource "libvirt_cloudinit_disk" "commoninit" {
   count     = length(var.vm_hostname)
-  name      = "${var.vm_hostname[count.index]}-commoninit.iso"
+  name      = "${var.vm_hostname[count.index]}.${var.vm_fqdn}-commoninit.iso"
   pool      = "default" # List storage pools using virsh pool-list
   user_data = data.template_file.user_data[count.index].rendered
 }
@@ -32,7 +32,7 @@ data "template_file" "user_data" {
 # Define KVM domain to create
 resource "libvirt_domain" "ubuntu-22_04" {
   count  = length(var.vm_hostname)
-  name   = var.vm_hostname[count.index]
+  name   = "${var.vm_hostname[count.index]}.${var.vm_fqdn}"
   memory = var.memoryMB
   vcpu   = var.CPU
 
