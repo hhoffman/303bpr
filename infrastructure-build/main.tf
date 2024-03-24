@@ -35,6 +35,7 @@ resource "libvirt_domain" "ubuntu-22_04" {
   name   = "${var.vm_hostname[count.index]}.${var.vm_fqdn}"
   memory = var.memoryMB
   vcpu   = var.CPU
+  autostart = "true"
 
   disk {
     #volume_id = "${libvirt_volume-ubuntu-22_04-qcow2.id}"
