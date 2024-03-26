@@ -1,12 +1,12 @@
 ---
 # roles/common_configs/tasks/main.yml
 
-- name: Gather facts
-  ansible.builtin.setup:
+#- name: Gather facts
+#  ansible.builtin.setup:
 
-- name: Gather package facts
-  ansible.builtin.package_facts:
-    manager: auto
+#- name: Gather package facts
+#  ansible.builtin.package_facts:
+#    manager: auto
 
 # Run specific tasks for distro
 - name: Run Debian based system tasks
