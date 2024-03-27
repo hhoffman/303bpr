@@ -9,5 +9,3 @@ output.tf – containing the output that needs to be generated on successful com
 To build a new system, run the following commands:
 terraform plan -out tfplan -var vm_hostname="HOSTNAME-INSTANCE_NBR"
 terraform apply tfplan
-
-# https://blog.gruntwork.io/how-to-manage-multiple-environments-with-terraform-using-branches-875d1a2ee647
