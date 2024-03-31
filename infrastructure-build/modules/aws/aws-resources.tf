@@ -17,7 +17,7 @@ resource "aws_subnet" "private" {
 }
 
 resource "aws_instance" "ubuntu" {
-  ami           = "ami-123456" # Use the appropriate AMI for your region and Ubuntu 22.04
+  ami           = "ami-081cfb0d2314c6dee" # Use the appropriate AMI for your region and Ubuntu 22.04
   instance_type = var.instance_type
   subnet_id     = aws_subnet.public.id
 
@@ -27,4 +27,3 @@ resource "aws_instance" "ubuntu" {
     Name = "UbuntuInstance"
   }
 }
-
