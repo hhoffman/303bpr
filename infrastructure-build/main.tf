@@ -1,1 +1,5 @@
-# Moved everything into individual resource files once we added AWS
+# Moved everything into individual modules directories
+
+module "libvirt_infrastructure" {
+  source = "./modules/libvirt"
+}
