@@ -1,65 +1,9 @@
 ---
-- hosts: docker-*
-  become: true
+# install_docker.yml
+
+- name: Install Docker
+  hosts: docker-*
+  become: yes
   become_user: root
-  vars:
-    container_count: 4
-    default_container_name: docker
-    default_container_image: ubuntu
-    default_container_command: sleep 1h
-
-  tasks:
-    - name: Install aptitude
-      ansible.builtin.package:
-        name: aptitude
-        state: latest
-
-    - name: Install required system packages
-      ansible.builtin.package:
-        name:
-          - apt-transport-https
-          - ca-certificates
-          - curl
-          - software-properties-common
-        state: latest
-        
-    - name: Add Docker Stable APT repository
-      ansible.builtin.deb822_repository:
-        name: docker
-        types: [deb]
-        uris: "https://download.docker.com/linux/ubuntu"
-        signed_by: "https://download.docker.com/linux/ubuntu/gpg"
-        architectures: amd64
-        suites: ["{{ ansible_distribution_release|lower }}"]
-        components: stable
-        state: present
-        enabled: yes
-      when: ansible_distribution == "Ubuntu"
-    
-    - name: Update apt and install docker-ce packages
-      ansible.builtin.package:
-        name:
-          - docker-ce
-          - docker-ce-cli
-          - containerd.io
-          - docker-buildx-plugin
-          - docker-compose-plugin
-          - python3-docker
-        state: latest
-        update_cache: true
-
-    - name: Initialize Docker Swarm
-      community.docker.docker_swarm:
-        state: present
-        advertise_addr: "{{ ansible_default_ipv4. address }}"
-        listen_addr: "0.0.0.0"
-      register: manager_output
-      when: inventory_hostname in groups['docker_managers'][0]
-
-    - name: Join Docker Swarm
-      docker_swarm:
-        state: join
-        join_token: "{{ hostvars[groups['docker_managers'][0]].manager_output.swarm_facts.JoinTokens.Worker }}"
-        advertise_addr: "{{ ansible_default_ipv4. address }}"
-        remote_addrs: "{{ hostvars[groups['docker_managers'][0]].inventory_hostname }}"
-      when: inventory_hostname in groups['docker_workers']
+  roles:
+    - docker
