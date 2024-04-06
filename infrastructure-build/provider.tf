@@ -6,6 +6,9 @@ terraform {
     aws = {
       source = "hashicorp/aws"
     }
+    vsphere = {
+      source = "hashicorp/vsphere"
+    }
   }
 }
 
