@@ -1,0 +1,46 @@
+---
+# roles/docker/tasks/main.yml
+
+- name: Gather facts
+  ansible.builtin.setup:
+
+- name: Gather package facts
+  ansible.builtin.package_facts:
+    manager: auto
+
+#
+# Install packages by Distro type
+- name: Install Docker  packages (Debian/Ubuntu)
+  import_tasks: ubuntu.yml
+  when: "ansible_os_family == 'Debian' or ansible_os_family == 'Ubuntu'"
+
+- name: Install Docker packages (Rocky)
+  import_tasks: redhat.yml
+  when: ansible_os_family == 'RedHat'
+
+
+- name: Add Ansible user to Docker group
+  user: 
+    name: ansible
+    groups: docker
+    append: yes
+
+- name: Initialize Docker Swarm
+  community.docker.docker_swarm:
+    state: present
+    advertise_addr: "{{ ansible_default_ipv4.address }}"
+    listen_addr: "0.0.0.0"
+  register: manager_output
+  when: inventory_hostname in groups['docker_managers'][0]
+
+- name: Debug manager_output
+  debug:
+    var: ansible_default_ipv4.address
+
+- name: Join Docker Swarm
+  community.docker.docker_swarm:
+    state: join
+    join_token: "{{ hostvars[groups['docker_managers'][0]].manager_output.swarm_facts.JoinTokens.Worker }}"
+    advertise_addr: "{{ ansible_default_ipv4.address }}"
+    remote_addrs: "{{ hostvars[groups['docker_managers'][0]].inventory_hostname }}"
+  when: inventory_hostname in groups['docker_workers']

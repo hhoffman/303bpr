@@ -1,0 +1,39 @@
+- name: Install aptitude
+  ansible.builtin.package:
+    name: aptitude
+    state: latest
+
+- name: Install required system packages
+  ansible.builtin.package:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+    state: latest
+        
+- name: Add Docker Stable APT repository
+  ansible.builtin.deb822_repository:
+    name: docker
+    types: [deb]
+    uris: "https://download.docker.com/linux/ubuntu"
+    signed_by: "https://download.docker.com/linux/ubuntu/gpg"
+    architectures: amd64
+    suites: ["{{ ansible_distribution_release|lower }}"]
+    components: stable
+    state: present
+    enabled: yes
+  when: ansible_distribution == "Ubuntu"
+
+- name: Update apt and install docker-ce packages
+  ansible.builtin.package:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+      - python3-docker
+      - nfs-common
+    state: latest
+    update_cache: true
