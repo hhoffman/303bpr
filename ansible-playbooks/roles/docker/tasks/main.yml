@@ -33,10 +33,6 @@
   register: manager_output
   when: inventory_hostname in groups['docker_managers'][0]
 
-- name: Debug manager_output
-  debug:
-    var: ansible_default_ipv4.address
-
 - name: Join Docker Swarm
   community.docker.docker_swarm:
     state: join
@@ -44,3 +40,9 @@
     advertise_addr: "{{ ansible_default_ipv4.address }}"
     remote_addrs: "{{ hostvars[groups['docker_managers'][0]].inventory_hostname }}"
   when: inventory_hostname in groups['docker_workers']
+
+- name: create traefik network
+  docker_network:
+    name: traefik_net
+    driver: overlay
+  when: inventory_hostname in groups['docker_managers']
