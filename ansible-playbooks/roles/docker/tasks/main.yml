@@ -43,6 +43,20 @@
 
 - name: create traefik network
   docker_network:
-    name: traefik_net
+    name: traefik-public
     driver: overlay
   when: inventory_hostname in groups['docker_managers']
+
+- name: Create Cloudflare email secret for swarm/letsencrypt
+  community.docker.docker_secret:
+    name: cloudflare_email
+    data: "{{ lookup('env', 'CLOUDFLARE_EMAIL') }}"
+    state: present
+  when: inventory_hostname in groups['docker_managers'][0]
+
+- name: Create Cloudflare API Token secret for swarm/letsencrypt
+  community.docker.docker_secret:
+    name: cloudflare_api_token
+    data: "{{ lookup('env', 'CLOUDFLARE_API_TOKEN') }}"
+    state: present
+  when: inventory_hostname in groups['docker_managers'][0]
