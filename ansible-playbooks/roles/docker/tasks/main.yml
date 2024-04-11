@@ -60,3 +60,34 @@
     data: "{{ lookup('env', 'CLOUDFLARE_API_TOKEN') }}"
     state: present
   when: inventory_hostname in groups['docker_managers'][0]
+
+- name: Create User Basic Auth secret in Docker Swarm
+  community.docker.docker_secret:
+    name: BASIC_AUTH_USER
+    data: "{{ lookup('env', 'BASIC_AUTH_USER') }}"
+  when: inventory_hostname in groups['docker_managers'][0]
+
+    #- name: Copy Traefik configuration file to Docker Swarm manager
+    #  ansible.builtin.copy:
+    #    src: docker-swarm_traefik.yml
+    #    dest: /tmp/docker-swarm_traefik.yml
+    #  when: inventory_hostname in groups['docker_managers']
+
+- name: Generate Traefik docker-compose configuration
+  ansible.builtin.template:
+    src: traefik-config.j2
+    dest: /tmp/docker-swarm_traefik.yml
+  when: inventory_hostname in groups['docker_managers']
+  vars:
+    traefik_version: "v3.0"
+    domain: "303bpr.org"
+    email: "hhoffman@ip-solutions.net"
+
+- name: Deploy Traefik stack to Docker Swarm
+  community.docker.docker_stack:
+    state: present
+    name: traefik
+    compose:
+      - /tmp/docker-swarm_traefik.yml
+  when: inventory_hostname in groups['docker_managers']
+
