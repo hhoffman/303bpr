@@ -1,5 +1,6 @@
 ---
 # install_docker.yml
+# Installs Docker, initiates a docker swarm, and sets up traefik reverse proxy
 
 - name: Install Docker
   hosts: docker-*

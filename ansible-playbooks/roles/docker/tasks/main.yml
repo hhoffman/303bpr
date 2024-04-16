@@ -61,21 +61,34 @@
     state: present
   when: inventory_hostname in groups['docker_managers'][0]
 
-- name: Create User Basic Auth secret in Docker Swarm
-  community.docker.docker_secret:
-    name: BASIC_AUTH_USER
-    data: "{{ lookup('env', 'BASIC_AUTH_USER') }}"
+- name: Create a secure temporary directory
+  ansible.builtin.file:
+    path: "/var/tmp/{{ ansible_user_id }}_temp"
+    state: directory
+    mode: 0700
   when: inventory_hostname in groups['docker_managers'][0]
 
-    #- name: Copy Traefik configuration file to Docker Swarm manager
-    #  ansible.builtin.copy:
-    #    src: docker-swarm_traefik.yml
-    #    dest: /tmp/docker-swarm_traefik.yml
-    #  when: inventory_hostname in groups['docker_managers']
+- name: Ensure the traefik-htpasswd file is present on the Docker host
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/traefik-htpasswd"
+    dest: "/var/tmp/{{ ansible_user_id }}_temp/traefik-htpasswd"
+  when: inventory_hostname in groups['docker_managers'][0]
+
+- name: Create User Basic Auth secret in Docker Swarm
+  community.docker.docker_secret:
+    name: basic_auth_usersfile
+    data_src: "/var/tmp/{{ ansible_user_id }}_temp/traefik-htpasswd"
+  when: inventory_hostname in groups['docker_managers'][0]
+
+- name: Remove the temporary directory
+  ansible.builtin.file:
+    path: "/var/tmp/{{ ansible_user_id }}_temp"
+    state: absent
+  when: inventory_hostname in groups['docker_managers'][0]
 
 - name: Generate Traefik docker-compose configuration
   ansible.builtin.template:
-    src: traefik-config.j2
+    src: docker-swarm_traefik.j2
     dest: /tmp/docker-swarm_traefik.yml
   when: inventory_hostname in groups['docker_managers']
   vars:
