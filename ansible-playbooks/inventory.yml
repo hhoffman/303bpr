@@ -13,6 +13,7 @@ all:
     kvm_servers:
       hosts:
         kvm-00.303bpr.org:
+          ansible_connection: local
     print_servers:
       hosts:
         prntsrv-00.303bpr.org:
