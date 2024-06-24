@@ -1,0 +1,57 @@
+---
+- name: Ensure CPU supports KVM acceleration
+  command: egrep -c '(vmx|svm)' /proc/cpuinfo
+  register: kvm_support
+  changed_when: false
+  failed_when: kvm_support.stdout == "0"
+
+- name: Install KVM and required packages
+  apt:
+    name:
+      - qemu-kvm
+      - libvirt-daemon-system
+      - libvirt-clients
+      - bridge-utils
+      - libosinfo-bin
+      - virt-top
+      - libguestfs-tools
+    state: present
+  when: kvm_support.stdout != "0"
+
+- name: Check if ansible user exists
+  getent:
+    database: passwd
+    key: ansible
+  register: ansible_user
+  changed_when: false
+
+- name: Create ansible group if it does not exist
+  group:
+    name: ansible
+    state: present
+  when: ansible_user is not defined
+
+- name: Create ansible user if it does not exist
+  user:
+    name: ansible
+    group: ansible
+    state: present
+  when: ansible_user is not defined
+
+- name: Add ansible user to libvirt group
+  user:
+    name: ansible
+    groups: libvirt
+    append: yes
+
+- name: Add ansible user to kvm group
+  user:
+    name: ansible
+    groups: kvm
+    append: yes
+
+- name: Ensure libvirt service is started and enabled
+  service:
+    name: libvirtd
+    state: started
+    enabled: yes
