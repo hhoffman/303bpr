@@ -1,0 +1,5 @@
+---
+cert_tool_ca_output_dir: "/path/to/output"
+cert_tool_ca_root_config: "root-ca.json"
+cert_tool_ca_intermediate_config: "intermediate-ca.json"
+cert_tool_ca_client_server_config: "client-server.json"
