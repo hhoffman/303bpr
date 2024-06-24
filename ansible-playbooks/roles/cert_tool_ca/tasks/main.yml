@@ -1,0 +1,55 @@
+---
+- name: Create output directory
+  file:
+    path: "{{ cert_tool_ca_output_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Create root CA configuration file
+  template:
+    src: "root-ca.json.j2"
+    dest: "{{ cert_tool_ca_output_dir }}/{{ cert_tool_ca_root_config }}"
+
+- name: Generate root CA certificate and key
+  command: >
+    cert-tool generate-ca -c {{ cert_tool_ca_output_dir }}/{{ cert_tool_ca_root_config }} -o {{ cert_tool_ca_output_dir }}/root-ca
+  args:
+    creates: "{{ cert_tool_ca_output_dir }}/root-ca/ca.pem"
+
+- name: Create intermediate CA configuration file
+  template:
+    src: "intermediate-ca.json.j2"
+    dest: "{{ cert_tool_ca_output_dir }}/{{ cert_tool_ca_intermediate_config }}"
+
+- name: Generate intermediate CA certificate and key
+  command: >
+    cert-tool generate-ca -c {{ cert_tool_ca_output_dir }}/{{ cert_tool_ca_intermediate_config }} -o {{ cert_tool_ca_output_dir }}/intermediate-ca
+  args:
+    creates: "{{ cert_tool_ca_output_dir }}/intermediate-ca/ca.pem"
+
+- name: Sign intermediate CA certificate with root CA
+  command: >
+    cert-tool sign -c {{ cert_tool_ca_output_dir }}/root-ca/ca.pem -k {{ cert_tool_ca_output_dir }}/root-ca/ca-key.pem -o {{ cert_tool_ca_output_dir }}/intermediate-ca-signed.pem {{ cert_tool_ca_output_dir }}/intermediate-ca/csr.pem
+  args:
+    creates: "{{ cert_tool_ca_output_dir }}/intermediate-ca-signed.pem"
+
+- name: Create client/server certificate configuration file
+  template:
+    src: "client-server.json.j2"
+    dest: "{{ cert_tool_ca_output_dir }}/{{ cert_tool_ca_client_server_config }}"
+
+- name: Generate client/server certificate and key
+  command: >
+    cert-tool generate-cert -c {{ cert_tool_ca_output_dir }}/{{ cert_tool_ca_client_server_config }} -o {{ cert_tool_ca_output_dir }}/client-server
+  args:
+    creates: "{{ cert_tool_ca_output_dir }}/client-server/cert.pem"
+
+- name: Sign client/server certificate with intermediate CA
+  command: >
+    cert-tool sign -c {{ cert_tool_ca_output_dir }}/intermediate-ca-signed.pem -k {{ cert_tool_ca_output_dir }}/intermediate-ca/ca-key.pem -o {{ cert_tool_ca_output_dir }}/client-server-signed.pem {{ cert_tool_ca_output_dir }}/client-server/csr.pem
+  args:
+    creates: "{{ cert_tool_ca_output_dir }}/client-server-signed.pem"
+
+- name: Verify the certificate chain
+  command: >
+    openssl verify -CAfile {{ cert_tool_ca_output_dir }}/root-ca/ca.pem -untrusted {{ cert_tool_ca_output_dir }}/intermediate-ca-signed.pem {{ cert_tool_ca_output_dir }}/client-server-signed.pem
