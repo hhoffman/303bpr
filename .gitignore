@@ -116,3 +116,5 @@ Vagrantfile
 # vendored lib dir
 lib/ansible/_vendor/*
 !lib/ansible/_vendor/__init__.py
+# Ansible log files
+logs/hosts/ansible*.log
