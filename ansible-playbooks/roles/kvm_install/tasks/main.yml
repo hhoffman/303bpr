@@ -56,24 +56,29 @@
     state: started
     enabled: yes
     
+---
 - name: Create VLAN configuration files
   template:
     src: vlan_template.xml.j2
     dest: "/etc/libvirt/qemu/networks/kvmbr{{ item }}.xml"
   with_items: "{{ vlans }}"
 
-- name: Define the network
+- name: Define the network if not already defined
   command: "virsh net-define /etc/libvirt/qemu/networks/kvmbr{{ item }}.xml"
+  args:
+    creates: "/var/lib/libvirt/network/kvmbr{{ item }}.xml"
   with_items: "{{ vlans }}"
+  register: define_results
   ignore_errors: yes
 
-- name: Start the network
+- name: Start the network if not already started
   command: "virsh net-start kvmbr{{ item }}"
+  when: define_results.results[item.ansible_loop.index0].rc == 0 or "'active' not in lookup('command', 'virsh net-list --all | grep kvmbr{{ item }}')"
   with_items: "{{ vlans }}"
   ignore_errors: yes
 
-- name: Autostart the network
+- name: Ensure network is set to autostart
   command: "virsh net-autostart kvmbr{{ item }}"
+  when: "'no' in lookup('command', 'virsh net-list --autostart | grep kvmbr{{ item }} || echo no')"
   with_items: "{{ vlans }}"
   ignore_errors: yes
-
