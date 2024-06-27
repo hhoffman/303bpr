@@ -62,22 +62,38 @@
     dest: "/etc/libvirt/qemu/networks/kvmbr{{ item }}.xml"
   with_items: "{{ vlans }}"
 
+- name: Check if network is already defined
+  command: "virsh net-info kvmbr{{ item }}"
+  register: net_info
+  ignore_errors: yes
+  with_items: "{{ vlans }}"
+
 - name: Define the network if not already defined
   command: "virsh net-define /etc/libvirt/qemu/networks/kvmbr{{ item }}.xml"
-  args:
-    creates: "/var/lib/libvirt/network/kvmbr{{ item }}.xml"
   with_items: "{{ vlans }}"
-  register: define_results
+  when: net_info.results[item.ansible_loop.index0].rc != 0
   ignore_errors: yes
+
+- name: Check if network is active
+  command: "virsh net-list --all | grep kvmbr{{ item }}"
+  register: net_list
+  ignore_errors: yes
+  with_items: "{{ vlans }}"
 
 - name: Start the network if not already started
   command: "virsh net-start kvmbr{{ item }}"
-  when: define_results.results[item.ansible_loop.index0].rc == 0 or "'active' not in lookup('command', 'virsh net-list --all | grep kvmbr{{ item }}')"
   with_items: "{{ vlans }}"
+  when: net_list.results[item.ansible_loop.index0].stdout.find('active') == -1
   ignore_errors: yes
+
+- name: Check if network is set to autostart
+  command: "virsh net-list --autostart | grep kvmbr{{ item }}"
+  register: net_autostart
+  ignore_errors: yes
+  with_items: "{{ vlans }}"
 
 - name: Ensure network is set to autostart
   command: "virsh net-autostart kvmbr{{ item }}"
-  when: "'no' in lookup('command', 'virsh net-list --autostart | grep kvmbr{{ item }} || echo no')"
   with_items: "{{ vlans }}"
+  when: net_autostart.results[item.ansible_loop.index0].rc != 0
   ignore_errors: yes
