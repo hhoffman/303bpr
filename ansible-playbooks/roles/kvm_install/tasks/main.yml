@@ -55,3 +55,25 @@
     name: libvirtd
     state: started
     enabled: yes
+    
+- name: Create VLAN configuration files
+  template:
+    src: vlan_template.xml.j2
+    dest: "/etc/libvirt/qemu/networks/kvmbr{{ item }}.xml"
+  with_items: "{{ vlans }}"
+
+- name: Define the network
+  command: "virsh net-define /etc/libvirt/qemu/networks/kvmbr{{ item }}.xml"
+  with_items: "{{ vlans }}"
+  ignore_errors: yes
+
+- name: Start the network
+  command: "virsh net-start kvmbr{{ item }}"
+  with_items: "{{ vlans }}"
+  ignore_errors: yes
+
+- name: Autostart the network
+  command: "virsh net-autostart kvmbr{{ item }}"
+  with_items: "{{ vlans }}"
+  ignore_errors: yes
+
