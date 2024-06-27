@@ -56,23 +56,24 @@
     state: started
     enabled: yes
     
+---
 - name: Create VLAN configuration files
   template:
     src: vlan_template.xml.j2
     dest: "/etc/libvirt/qemu/networks/kvmbr{{ item }}.xml"
   with_items: "{{ vlans }}"
 
-- name: Define the network if not already defined
-  shell: "virsh net-define /etc/libvirt/qemu/networks/kvmbr{{ item }}.xml"
-  when: "'kvmbr{{ item }}' not in network_list.stdout"
-  with_items: "{{ vlans }}"
-  register: define_results
-  ignore_errors: yes
-
 - name: Check network list
   command: "virsh net-list --all"
   register: network_list
   changed_when: false
+
+- name: Define the network if not already defined
+  command: "virsh net-define /etc/libvirt/qemu/networks/kvmbr{{ item }}.xml"
+  when: "'kvmbr{{ item }}' not in network_list.stdout"
+  with_items: "{{ vlans }}"
+  register: define_results
+  ignore_errors: yes
 
 - name: Check active network list
   command: "virsh net-list --all"
@@ -80,7 +81,7 @@
   changed_when: false
 
 - name: Start the network if not already started
-  shell: "virsh net-start kvmbr{{ item }}"
+  command: "virsh net-start kvmbr{{ item }}"
   when: "'kvmbr{{ item }}' not in active_network_list.stdout"
   with_items: "{{ vlans }}"
   register: start_results
@@ -92,7 +93,7 @@
   changed_when: false
 
 - name: Ensure network is set to autostart
-  shell: "virsh net-autostart kvmbr{{ item }}"
+  command: "virsh net-autostart kvmbr{{ item }}"
   when: "'kvmbr{{ item }}' not in autostart_network_list.stdout"
   with_items: "{{ vlans }}"
   register: autostart_results
